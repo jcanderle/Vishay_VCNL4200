@@ -27,6 +27,7 @@ class VCNL4200Class {
 
     int begin();
     void end();
+    boolean exists(uint8_t address);
     boolean read(uint8_t reg, uint16_t *data);
     boolean write( uint8_t reg, uint16_t data);
     virtual boolean read_PRX(uint16_t *prx);
