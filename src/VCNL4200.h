@@ -27,14 +27,9 @@ class VCNL4200Class {
 
     int begin();
     void end();
-<<<<<<< HEAD
     boolean exists(uint8_t address);
-    boolean read(uint8_t reg, uint16_t *data);
-    boolean write( uint8_t reg, uint16_t data);
-=======
     boolean readWord(uint8_t reg, uint16_t *data);
     boolean writeWord( uint8_t reg, uint16_t data);
->>>>>>> b08a0a40ad8214ac8e376bd1c556e7113b238335
     virtual boolean read_PRX(uint16_t *prx);
     virtual boolean read_ALS(uint16_t *als);
     virtual float get_lux(void);

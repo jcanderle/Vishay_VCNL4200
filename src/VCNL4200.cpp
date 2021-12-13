@@ -112,20 +112,8 @@ VCNL4200Class::~VCNL4200Class(void)
 int VCNL4200Class::begin(void)
 {
   _wire->begin();
-<<<<<<< HEAD
   if (slaveAddress==0) slaveAddress = VCNL4200_ADDRESS;
   if (!exists(slaveAddress)) return 0;
-=======
-  slaveAddress = VCNL4200_ADDRESS;
-
-  // Prevent I2C bus lockup
-  writeWord(VCNL4200_REG_ALS_THDL, 0x0);
-  writeWord(VCNL4200_REG_ALS_THDL, 0x0);
-  
-  uint16_t id;
-  if (!readWord(VCNL4200_REG_ID, &id) || (id & 0xFF) != VCNL4200_WHO_AM_I)
-	  return 0;
->>>>>>> b08a0a40ad8214ac8e376bd1c556e7113b238335
 
   // Initialization
   if (writeWord(VCNL4200_REG_ALS_CONF, VCNL4200_DEFAULT_ALS_CONF) &&
@@ -144,24 +132,21 @@ int VCNL4200Class::begin(void)
   return 0;
 }
 
-<<<<<<< HEAD
 boolean VCNL4200Class::exists(uint8_t address) {
   _wire->begin();
   slaveAddress = address;
 
   // Prevent I2C bus lockup
-  write(VCNL4200_REG_ALS_THDL, 0x0);
-  write(VCNL4200_REG_ALS_THDL, 0x0);
+  writeWord(VCNL4200_REG_ALS_THDL, 0x0);
+  writeWord(VCNL4200_REG_ALS_THDL, 0x0);
   
   uint16_t id;
-  if (!read(VCNL4200_REG_ID, &id) || (id & 0xFF) != VCNL4200_WHO_AM_I)
+  if (!readWord(VCNL4200_REG_ID, &id) || (id & 0xFF) != VCNL4200_WHO_AM_I)
     return false;
 
   return true;
 }
 
-boolean VCNL4200Class::read(uint8_t reg, uint16_t *data)
-=======
 void VCNL4200Class::end(void)
 {
   ALS_INT_EN(false);
@@ -171,7 +156,6 @@ void VCNL4200Class::end(void)
 }
 
 boolean VCNL4200Class::readWord(uint8_t reg, uint16_t *data)
->>>>>>> b08a0a40ad8214ac8e376bd1c556e7113b238335
 {
   uint8_t   wd;
 
