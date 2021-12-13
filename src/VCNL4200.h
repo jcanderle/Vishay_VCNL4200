@@ -27,9 +27,14 @@ class VCNL4200Class {
 
     int begin();
     void end();
+<<<<<<< HEAD
     boolean exists(uint8_t address);
     boolean read(uint8_t reg, uint16_t *data);
     boolean write( uint8_t reg, uint16_t data);
+=======
+    boolean readWord(uint8_t reg, uint16_t *data);
+    boolean writeWord( uint8_t reg, uint16_t data);
+>>>>>>> b08a0a40ad8214ac8e376bd1c556e7113b238335
     virtual boolean read_PRX(uint16_t *prx);
     virtual boolean read_ALS(uint16_t *als);
     virtual float get_lux(void);
@@ -53,7 +58,18 @@ class VCNL4200Class {
       PRX_INT_CLOSING = 1,
       PRX_INT_AWAY = 2,
       PRX_INT_BOTH = 3;
-    
+    enum PRX_LED_I_t {
+      PRX_LED_I_50mA = 0,
+      PRX_LED_I_75mA = 1,
+      PRX_LED_I_100mA = 2,
+      PRX_LED_I_120mA = 3,
+      PRX_LED_I_140mA = 4,
+      PRX_LED_I_160mA = 5,
+      PRX_LED_I_180mA = 6,
+      PRX_LED_I_200mA = 7};
+    boolean set_PRX_LED_I(PRX_LED_I_t led_i);
+    PRX_LED_I_t get_PRX_LED_I(void);
+      
   private:
     TwoWire* _wire;
     uint8_t slaveAddress;

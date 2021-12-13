@@ -78,6 +78,9 @@
 #define VCNL4200_PRX_MPS_2P         (0x1 << VCNL4200_PRX_MPS_SHIFT)
 #define VCNL4200_PRX_MPS_4P         (0x2 << VCNL4200_PRX_MPS_SHIFT)
 #define VCNL4200_PRX_MPS_8P         (0x3 << VCNL4200_PRX_MPS_SHIFT)
+#define VCNL4200_PRX_LED_I_SHIFT    8
+#define VCNL4200_PRX_LED_I_MASK     (0x07 << VCNL4200_PRX_LED_I_SHIFT)
+
 #define VCNL4200_PRX_SPO            (1 << 11)
 #define VCNL4200_PRX_SP             (1 << 12)
 
@@ -104,29 +107,44 @@ VCNL4200Class::VCNL4200Class(TwoWire& wire) :
 
 VCNL4200Class::~VCNL4200Class(void)
 {
-  ALS_INT_EN(false);
 }
 
 int VCNL4200Class::begin(void)
 {
   _wire->begin();
+<<<<<<< HEAD
   if (slaveAddress==0) slaveAddress = VCNL4200_ADDRESS;
   if (!exists(slaveAddress)) return 0;
+=======
+  slaveAddress = VCNL4200_ADDRESS;
+
+  // Prevent I2C bus lockup
+  writeWord(VCNL4200_REG_ALS_THDL, 0x0);
+  writeWord(VCNL4200_REG_ALS_THDL, 0x0);
+  
+  uint16_t id;
+  if (!readWord(VCNL4200_REG_ID, &id) || (id & 0xFF) != VCNL4200_WHO_AM_I)
+	  return 0;
+>>>>>>> b08a0a40ad8214ac8e376bd1c556e7113b238335
 
   // Initialization
-  write(VCNL4200_REG_ALS_CONF, VCNL4200_DEFAULT_ALS_CONF);
-  write(VCNL4200_REG_ALS_THDH, VCNL4200_DEFAULT_ALS_THDH);
-  write(VCNL4200_REG_ALS_THDL, VCNL4200_DEFAULT_ALS_THDL);
-  write(VCNL4200_REG_PRX_CONF, VCNL4200_DEFAULT_PRX_CONF);
-  write(VCNL4200_REG_PRX_CONF3, VCNL4200_DEFAULT_PRX_CONF3);
-  write(VCNL4200_REG_PRX_CANC, VCNL4200_DEFAULT_PRX_CANC);
-  write(VCNL4200_REG_PRX_THDL, VCNL4200_DEFAULT_PRX_THDL);
-  write(VCNL4200_REG_PRX_THDH, VCNL4200_DEFAULT_PRX_THDH);
-  lens_factor = 1.0;
+  if (writeWord(VCNL4200_REG_ALS_CONF, VCNL4200_DEFAULT_ALS_CONF) &&
+      writeWord(VCNL4200_REG_ALS_THDH, VCNL4200_DEFAULT_ALS_THDH) &&
+      writeWord(VCNL4200_REG_ALS_THDL, VCNL4200_DEFAULT_ALS_THDL) &&
+      writeWord(VCNL4200_REG_PRX_CONF, VCNL4200_DEFAULT_PRX_CONF) &&
+      writeWord(VCNL4200_REG_PRX_CONF3, VCNL4200_DEFAULT_PRX_CONF3) &&
+      writeWord(VCNL4200_REG_PRX_CANC, VCNL4200_DEFAULT_PRX_CANC) &&
+      writeWord(VCNL4200_REG_PRX_THDL, VCNL4200_DEFAULT_PRX_THDL) &&
+      writeWord(VCNL4200_REG_PRX_THDH, VCNL4200_DEFAULT_PRX_THDH))
+  {
+    lens_factor = 1.0;
+    return 1;
+  }
   
-  return 1;
+  return 0;
 }
 
+<<<<<<< HEAD
 boolean VCNL4200Class::exists(uint8_t address) {
   _wire->begin();
   slaveAddress = address;
@@ -143,6 +161,17 @@ boolean VCNL4200Class::exists(uint8_t address) {
 }
 
 boolean VCNL4200Class::read(uint8_t reg, uint16_t *data)
+=======
+void VCNL4200Class::end(void)
+{
+  ALS_INT_EN(false);
+  ALS_SD(true);
+  PRX_INT(false);
+  PRX_SD(true);
+}
+
+boolean VCNL4200Class::readWord(uint8_t reg, uint16_t *data)
+>>>>>>> b08a0a40ad8214ac8e376bd1c556e7113b238335
 {
   uint8_t   wd;
 
@@ -168,7 +197,7 @@ read_error:
   return false;
 }
 
-boolean VCNL4200Class::write(uint8_t reg, uint16_t data)
+boolean VCNL4200Class::writeWord(uint8_t reg, uint16_t data)
 {
   boolean status = false;
   
@@ -186,21 +215,21 @@ boolean VCNL4200Class::bitsUpdate(uint8_t reg, uint16_t mask, uint16_t update)
 {
   uint16_t value;
   
-  if (!read(reg, &value))
+  if (!readWord(reg, &value))
     return false;
   value &= mask;
   value |= update;
-  return write(reg, value);
+  return writeWord(reg, value);
 }
 
 boolean VCNL4200Class::read_PRX(uint16_t *prx)
 {
-  return read(VCNL4200_REG_PRX_DATA, prx);
+  return readWord(VCNL4200_REG_PRX_DATA, prx);
 }
 
 boolean VCNL4200Class::read_ALS(uint16_t *als)
 {
-  return read(VCNL4200_REG_ALS_DATA, als);
+  return readWord(VCNL4200_REG_ALS_DATA, als);
 }
 
 float VCNL4200Class::get_lux(void)
@@ -211,7 +240,7 @@ float VCNL4200Class::get_lux(void)
   float lux;
   float resolution[] = {0.024f, 0.012f, 0.006f, 0.003f};
 
-  if (!read(VCNL4200_REG_ALS_CONF, &als_conf) || !read_ALS(&als))
+  if (!readWord(VCNL4200_REG_ALS_CONF, &als_conf) || !read_ALS(&als))
     return -1.0f;
     
   als_it = (als_conf & VCNL4200_ALS_IT_MASK) >> VCNL4200_ALS_IT_SHIFT;
@@ -242,7 +271,7 @@ boolean VCNL4200Class::ALS_INT_with_threshold(float percent)
 {
   uint16_t als;
   
-  if (!read(VCNL4200_REG_ALS_DATA, &als) || percent <= 0)
+  if (!read_ALS(&als) || percent <= 0)
     return false;
  
   float thdh = (float)als * (100.0 + percent) / 100.0;
@@ -253,8 +282,8 @@ boolean VCNL4200Class::ALS_INT_with_threshold(float percent)
   uint16_t wl = (thdl < 0.0f) ? 0 : (uint16_t)thdl;
 
   if (ALS_INT_EN(false) &&
-      write(VCNL4200_REG_ALS_THDH, wh) &&
-      write(VCNL4200_REG_ALS_THDL, wl) &&
+      writeWord(VCNL4200_REG_ALS_THDH, wh) &&
+      writeWord(VCNL4200_REG_ALS_THDL, wl) &&
       ALS_INT_EN(true))
     return true;
     
@@ -280,8 +309,8 @@ boolean VCNL4200Class::PRX_INT(uint16_t prx_int)
 boolean VCNL4200Class::PRX_INT_with_threshold(uint16_t thdl, uint16_t thdh)
 {
   if (PRX_INT(PRX_INT_DISABLE) &&
-      write(VCNL4200_REG_PRX_THDL, thdl) &&
-      write(VCNL4200_REG_PRX_THDH, thdh) &&
+      writeWord(VCNL4200_REG_PRX_THDL, thdl) &&
+      writeWord(VCNL4200_REG_PRX_THDH, thdh) &&
       PRX_INT(PRX_INT_BOTH))
     return true;
     
@@ -290,7 +319,23 @@ boolean VCNL4200Class::PRX_INT_with_threshold(uint16_t thdl, uint16_t thdh)
 
 boolean VCNL4200Class::read_INT_FLAG(uint16_t *int_flag)
 {
-  return read(VCNL4200_REG_INT_FLAG, int_flag);
+  return readWord(VCNL4200_REG_INT_FLAG, int_flag);
+}
+
+boolean VCNL4200Class::set_PRX_LED_I(PRX_LED_I_t led_i)
+{
+  return bitsUpdate(
+    VCNL4200_REG_PRX_CONF3,
+    ~VCNL4200_PRX_LED_I_MASK,
+    led_i << VCNL4200_PRX_LED_I_SHIFT);
+}
+
+VCNL4200Class::PRX_LED_I_t VCNL4200Class::get_PRX_LED_I(void)
+{
+  uint16_t conf3; 
+  readWord(VCNL4200_REG_PRX_CONF3, &conf3);
+  return (PRX_LED_I_t)(
+    (conf3 & VCNL4200_PRX_LED_I_MASK) >> VCNL4200_PRX_LED_I_SHIFT);
 }
 
 // VCNL4200Class vcnl4200(Wire);
